@@ -1,14 +1,20 @@
 from datetime import datetime
 from ClaseMesas import *
 from random import randint
+from ClaseCliente import Cliente
+
 
 class Restaurante:
-    def __init__(self, ciudad: str, dirreccion, horario):
-
+    def __init__(self, ciudad: str, dirreccion, horario, cantidad_de_mesas: int):
+        if cantidad_de_mesas not in (16, 25, 36, 64):
+            raise ValueError("La cantidad de mesas debe ser 16, 25, 36 o 64")
+        if ciudad == "" or dirreccion == "" or horario == "":
+            raise ValueError("La ciudad, dirección y horario no pueden estar vacíos")
+        
         self.ciudad = ciudad
         self.dirreccion = dirreccion
         self.horario = horario
-        self.mesas = self.generar_matriz_mesas()
+        self.mesas = self.generar_matriz_mesas(cantidad_de_mesas)
         self.fecha_creacion = datetime.now().date()
         self.consumo = {}
 
@@ -34,15 +40,24 @@ class Restaurante:
         
         
     def AsignarMesa(self, cantidad_personas: int):
-        if cantidad_personas <= 0 or cantidad_personas > 8:
-            raise ValueError("La cantidad de personas debe ser entre 1 y 8")
+        if len(cantidad_personas) == 0:
+            raise ValueError("La cantidad de personas no puede estar vacía")
         
+        if cantidad_personas < 2 or cantidad_personas > 8:
+            raise ValueError("La cantidad de personas debe ser entre 2 y 8")
+        
+        if Cliente.calcular_edad_actual_años() < 18:
+            raise ValueError("El cliente debe ser mayor de edad para reservar una mesa")
+        
+
         fila, columna = self.determinar_mesa_disponible(cantidad_personas) 
         mesa = self.mesas.matriz[fila][columna]
         if mesa["ocupado"]:
             raise ValueError("La mesa ya está ocupada")
         
         mesa["ocupado"] = True  # Marcar como ocupada
+        mesa["Hora_llegada"] = datetime.now()  # Guardar la hora de llegada
+        mesa["Hora_salida"] = None  # Inicialmente no hay hora de salida
         return mesa["id"]   # Retornar el id de la mesa
     
 
@@ -51,6 +66,7 @@ class Restaurante:
             for j in range(self.mesas.columnas):
                 if self.mesas.matriz[i][j]["id"] == id_mesa: #Busca la mesa en la matriz
                     self.mesas.matriz[i][j]["ocupado"] = False #Marca la mesa como no ocupada
+                    self.mesas.matriz[i][j]["Hora_salida"] = datetime.now()
                     return
         raise ValueError("La mesa no existe o no está ocupada") #Si no se encuentra la mesa o si está vacía, lanza una excepción
     
@@ -69,8 +85,6 @@ class Restaurante:
                 else:
                     uso_mesas[capacidad]["libres"] += 1 #le suma 1 al numero de mesas libres de esa capacidad
         return uso_mesas
-    
-
     ##comentarios antes de la función:
     ##1. las capacidades de las mesas son 2, 4 y 8 y se ejecuta una vez el for para cada una de ellas
     ##2. el diccionario de uso de mesas es un diccionario que almacena la cantidad total de mesas de cada capacidad, la cantidad de mesas ocupadas y la cantidad de mesas libres
@@ -87,7 +101,12 @@ class Restaurante:
             print(f"Capacidad {capacidad}: Tasa de ocupación: {tasa_ocupacion:.2f}%")
 
     def agregar_consumo(self, producto: str, precio: float):
-        self.consumo[producto] = precio #Agregar el producto y el precio al diccionario
+        if producto.lower() not in ("rapida", "tradicional", "saludable", "gourmet"):
+            raise ValueError("El producto no es válido. Debe ser uno de los siguientes: rapida, tradicional, saludable, gourmet")
+        if precio <= 0:
+            raise ValueError("El precio debe ser mayor a 0")
+        
+        self.consumo[producto.lower()] = precio #Agregar el producto y el precio al diccionario
 
     def calcular_consumo_subtotal(self):
         subtotal = 0
@@ -116,3 +135,26 @@ class Restaurante:
         if incluir_propina.lower() == "si" : #Si se incluye la propina
             print(f"Propina: ${self.calcular_propina():.2f}") #Muestra la propina
         print(f"Total: ${self.calcular_total(incluir_propina):.2f}") #Muestra el total si se incluye la propina o si no se incluye
+    
+    def tiempo_promedio_permanencia(self, fecha: str):
+        """
+        Calcula el tiempo promedio de permanencia (en minutos) de los grupos en la sede para una fecha dada (YYYY-MM-DD).
+        """
+        try:
+            datetime.strptime(fecha, "%Y-%m-%d")  # Verifica que la fecha esté en el formato correcto
+        except ValueError:
+            raise ValueError("La fecha debe estar en el formato YYYY-MM-DD")
+        total_tiempo = 0
+        conteo = 0
+        for fila in self.mesas.matriz: 
+            for mesa in fila:
+                llegada = mesa.get("hora_llegada") #obtiene la hora de llegada
+                salida = mesa.get("hora_salida") #obtiene la hora de salida
+                if llegada and salida: #verifica si hay hora de llegada y salida
+                    if llegada.date().isoformat() == fecha and salida.date().isoformat() == fecha: #ambas fechas deben coincidir
+                        minutos = (salida - llegada).total_seconds() / 60 #calcula la diferencia en minutos
+                        total_tiempo += minutos  #suma el tiempo total
+                        conteo += 1 #incrementa el conteo
+        if conteo == 0:
+            return 0
+        return total_tiempo / conteo  # Promedio en minutos
