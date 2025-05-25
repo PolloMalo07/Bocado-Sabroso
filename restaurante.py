@@ -40,7 +40,7 @@ class Restaurante:
         
         
     def AsignarMesa(self, cantidad_personas: int):
-        if len(cantidad_personas) == 0:
+        if cantidad_personas is None:
             raise ValueError("La cantidad de personas no puede estar vacía")
         
         if cantidad_personas < 2 or cantidad_personas > 8:
@@ -124,8 +124,12 @@ class Restaurante:
             raise ValueError("El producto no es válido. Debe ser uno de los siguientes: rapida, tradicional, saludable, gourmet")
         if precio <= 0:
             raise ValueError("El precio debe ser mayor a 0")
+        producto = producto.lower()
+        if producto in self.consumo: #Si el producto ya existe en el diccionario, se suma el precio
+            self.consumo[producto] += precio #Suma el precio al producto existente
+        else: #Si el producto no existe en el diccionario, se agrega
+            self.consumo[producto] = precio #Agrega el producto y el precio al diccionario
         
-        self.consumo[producto.lower()] = precio #Agregar el producto y el precio al diccionario
 
     def calcular_consumo_subtotal(self):
         subtotal = 0
