@@ -89,7 +89,26 @@ class Restaurante:
     ##1. las capacidades de las mesas son 2, 4 y 8 y se ejecuta una vez el for para cada una de ellas
     ##2. el diccionario de uso de mesas es un diccionario que almacena la cantidad total de mesas de cada capacidad, la cantidad de mesas ocupadas y la cantidad de mesas libres
 
-    
+    def calcular_zona_mesas_mas_utilizada_y_tasa_ocupacion_sede_especifica(self):
+        uso_mesas = self.calcular_zona_mesas_mas_utilizadas()
+        zona_mas_ocupada = None
+        max_ocupadas =  -1
+        tasa_ocupacion = 0
+        for capacidad, valores in uso_mesas.items():
+            ocupadas = valores["ocupadas"]
+            total = valores["total"]
+            if ocupadas > max_ocupadas:
+                zona_mas_ocupada = capacidad
+                max_ocupadas = ocupadas
+                tasa_ocupacion = (ocupadas / total) * 100 if total > 0 else 0
+
+        if zona_mas_ocupada is None:
+                raise ValueError("No hay datos de mesa para analizar")
+        
+        return zona_mas_ocupada, tasa_ocupacion 
+
+
+
     def calcular_tasa_ocupacion(self, uso_mesas): #llama al diccionario de uso de mesas
         for capacidad, valores in uso_mesas.items(): #recorre el diccionario de uso de mesas
             total = valores["total"] #obtiene el total de mesas de la capacidad que estamos trabajando
@@ -158,3 +177,12 @@ class Restaurante:
         if conteo == 0:
             return 0
         return total_tiempo / conteo  # Promedio en minutos
+    
+    def porcentaje_productos_consumidos_por_categoría_sede_específica(self):
+        total = sum(self.consumo.values())
+        if total == 0:
+            print("No se ingresaron los productos correctamente")
+            return
+        for categoria, valor in self.consumo.items():
+            porcentaje = (valor / total) * 100
+            print(f"{self.ciudad} {categoria}: {porcentaje:.2f}%")
