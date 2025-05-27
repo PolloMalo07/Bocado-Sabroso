@@ -1,4 +1,3 @@
-
 from datetime import datetime, date
 from ClaseEmpresa import Empresa
 from ClaseRestaurante import Restaurante
@@ -49,12 +48,12 @@ def menu_empresa():
                     break
                 else:
                     print("Solo se permiten 16, 25, 36 o 64 mesas.")
-            empresa.agregar_restaurante(ciudad, direccion, f"{horario_apertura}-{horario_cierre}", mesas)
+            empresa.agregar_restaurante(ciudad, direccion, horario_apertura, horario_cierre, mesas)
             print("Restaurante agregado.")
         elif opcion == "2":
             print("\nRestaurantes registrados:")
             for idx, r in enumerate(empresa.restaurantes, 1):
-                print(f"{idx}. {r.ciudad} - {r.dirreccion} - {r.horario}")
+                print(f"{idx}. {r.ciudad} - {r.dirreccion} - {r.horario_apertura} a {r.horario_cierre}")
         elif opcion == "3":
             empresa.registrar_consumo_general()
             print("Consumo general registrado.")
@@ -72,7 +71,7 @@ def menu_empresa():
                 continue
             print("\nSeleccione el restaurante a administrar:")
             for idx, r in enumerate(empresa.restaurantes, 1):
-                print(f"{idx}. {r.ciudad} - {r.dirreccion} - {r.horario}")
+                print(f"{idx}. {r.ciudad} - {r.dirreccion} - {r.horario_apertura} a {r.horario_cierre}")
             while True:
                 seleccion = input("Ingrese el número del restaurante: ")
                 if esEntero(seleccion) and 1 <= int(seleccion) <= len(empresa.restaurantes):
@@ -152,5 +151,5 @@ def menu_restaurante(restaurante):
 
 if __name__ == "__main__":
     # Iniciar el programa   
-
+    # 
     menu_empresa()
