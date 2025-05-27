@@ -16,11 +16,11 @@ class Empresa:
             "gourmet": 0
         }
 
-    def agregar_restaurante(self, ciudad: str, direccion , horario , cantidad_de_mesas: int):
-        if len(ciudad.strip()) == 0 or len(direccion.strip()) == 0 or len(horario.strip()) == 0:
+    def agregar_restaurante(self, ciudad: str, direccion , horario_apertura, horario_cierre , cantidad_de_mesas: int):
+        if len(ciudad.strip()) == 0 or len(direccion.strip()) == 0 or len(horario_apertura.strip() or len(horario_cierre.strip())) == 0:
             raise ValueError("La ciudad, dirección y horario no pueden estar vacíos")
         
-        nuevo_restaurante = Restaurante(ciudad, direccion, horario, cantidad_de_mesas)
+        nuevo_restaurante = Restaurante(ciudad, direccion, horario_apertura, horario_cierre, cantidad_de_mesas)
         self.restaurantes.append(nuevo_restaurante)
 
     def calcular_cantidad_Restaurantes(self):
@@ -48,7 +48,7 @@ class Empresa:
             return
         for categoria, cantidad in self.consumo_general.items():
             porcentaje = (cantidad / total) * 100
-            print(f"{categoria}: {porcentaje:.2f}%")
+            print(f"{categoria}: {porcentaje:.2f}%")    
 
     def calcular_zona_mesas_mas_utilizadas_y_tasa_ocupacion_sedes_general(self):
         todas_las_sedes = self.restaurantes
@@ -58,6 +58,7 @@ class Empresa:
         uso_mesas_general = {2: {"total": 0, "ocupadas": 0, "libres": 0},
                     4: {"total": 0, "ocupadas": 0, "libres": 0},  
                     8: {"total": 0, "ocupadas": 0, "libres": 0}}
+        
         for sede in todas_las_sedes:
             uso_sede = sede.zona_mesas_mas_utilizadas()
             for capacidad in [2, 4, 8]: 
