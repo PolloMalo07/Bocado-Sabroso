@@ -1,4 +1,5 @@
 from math import sqrt
+import numpy as np
 
 class MatrizMesas:
     def __init__(self, Cantidad_De_Mesas: int):
@@ -16,7 +17,7 @@ class MatrizMesas:
         self.columnas = int(raiz_cuadrada)
         self.cantidad_mesas = Cantidad_De_Mesas
         letras_alfabeto = ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z')
-        self.letras_filas = letras_alfabeto[:self.filas]
+        self.letras_filas = letras_alfabeto[:self.filas] 
         self.tamaño_mesas = {
                     "m": 2, ##morado
                     "v": 4, ##verde
@@ -47,18 +48,18 @@ class MatrizMesas:
         i = base.index(inicio)
         base = base[i:] + base[:i]  # rota la base para cambiar el orden
 
-        matriz = [] ##se guarda la matriz
+        matriz = np.empty((self.filas, self.columnas), dtype=object)  # matriz numpy de objetos
         for i in range(self.filas):
-            fila = [] 
             for j in range(self.columnas):
-                letra = base[(j - i) % len(base)]  # patrón para alternar letras
-                identificador = f"{self.letras_filas[i]}{j+1}" ##letra que corresponde a la fila i y empezamos desde 1 (j+1)
-                fila.append({
-                    "id": identificador, 
+                letra = base[(j - i) % len(base)]  # patrón para alternar letras 
+                identificador = f"{self.letras_filas[i]}{j+1}" # identificador de la mesa
+
+                # Asigna un diccionario a cada celda de la matriz
+                matriz[i, j] = { 
+                    "id": identificador,
                     "capacidad": self.tamaño_mesas[letra],
                     "ocupado": False,
                     "letra": letra
-                })
-            matriz.append(fila)
+                }
         return matriz
     
