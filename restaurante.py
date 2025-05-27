@@ -1,20 +1,21 @@
 from datetime import datetime
 from ClaseMesas import *
-from random import randint
+from random import randint 
 from ClaseCliente import Cliente
 
 
 class Restaurante:
-    def __init__(self, ciudad: str, dirreccion, horario, cantidad_de_mesas: int):
+    def __init__(self, ciudad: str, dirreccion, horario_apertura, horario_cierre , cantidad_de_mesas: int):
         if cantidad_de_mesas not in (16, 25, 36, 64):
             raise ValueError("La cantidad de mesas debe ser 16, 25, 36 o 64")
-        if ciudad == "" or dirreccion == "" or horario == "":
+        if ciudad == "" or dirreccion == "" or horario_apertura == "" or horario_cierre == "":
             raise ValueError("La ciudad, dirección y horario no pueden estar vacíos")
         
         self.ciudad = ciudad
         self.dirreccion = dirreccion
-        self.horario = horario
-        self.mesas = self.generar_matriz_mesas(cantidad_de_mesas)
+        self.horario_apertura = horario_apertura
+        self.horario_cierre = horario_cierre
+        self.mesas = MatrizMesas(cantidad_de_mesas)
         self.fecha_creacion = datetime.now().date()
         self.consumo = {}
 
@@ -43,7 +44,7 @@ class Restaurante:
         if cantidad_personas is None:
             raise ValueError("La cantidad de personas no puede estar vacía")
         
-        if cantidad_personas < 2 or cantidad_personas > 8:
+        if cantidad_personas < 2  or cantidad_personas > 8:
             raise ValueError("La cantidad de personas debe ser entre 2 y 8")
         
         if Cliente.calcular_edad_actual_años() < 18:
@@ -89,32 +90,34 @@ class Restaurante:
     ##1. las capacidades de las mesas son 2, 4 y 8 y se ejecuta una vez el for para cada una de ellas
     ##2. el diccionario de uso de mesas es un diccionario que almacena la cantidad total de mesas de cada capacidad, la cantidad de mesas ocupadas y la cantidad de mesas libres
 
+
     def calcular_zona_mesas_mas_utilizada_y_tasa_ocupacion_sede_especifica(self):
         uso_mesas = self.calcular_zona_mesas_mas_utilizadas()
         zona_mas_ocupada = None
-        max_ocupadas =  -1
+        max_ocupadas = 0
         tasa_ocupacion = 0
-        for capacidad, valores in uso_mesas.items():
-            ocupadas = valores["ocupadas"]
-            total = valores["total"]
-            if ocupadas > max_ocupadas:
-                zona_mas_ocupada = capacidad
-                max_ocupadas = ocupadas
-                tasa_ocupacion = (ocupadas / total) * 100 if total > 0 else 0
-
-        if zona_mas_ocupada is None:
-                raise ValueError("No hay datos de mesa para analizar")
-        
+        hay_ocupadas = False
+        for capacidad, valores in uso_mesas.items(): ## recorre el diccionario de uso de mesas
+            ocupadas = valores["ocupadas"] ## obtiene el total de mesas ocupadas de esa capacidad
+            total = valores["total"] ## obtiene el total de mesas de esa capacidad
+            if ocupadas > 0: ## si hay mesas ocupadas de esa capacidad
+                hay_ocupadas = True 
+            if ocupadas > max_ocupadas: ## si la cantidad de mesas ocupadas de esa capacidad es mayor a la cantidad de mesas ocupadas de la zona más ocupada
+                zona_mas_ocupada = capacidad ## asigna la capacidad de la zona más ocupada
+                max_ocupadas = ocupadas ## actualiza la cantidad de mesas ocupadas de la zona más ocupada
+                tasa_ocupacion = (ocupadas / total) * 100 if total > 0 else 0 ## calcula la tasa de ocupación de la zona más ocupada
+        if not hay_ocupadas: 
+            return None, 0.0  # No hay mesas ocupadas en ninguna zona
         return zona_mas_ocupada, tasa_ocupacion 
 
 
 
-    def calcular_tasa_ocupacion(self, uso_mesas): #llama al diccionario de uso de mesas
+    def calcular_tasa_ocupacion(self, uso_mesas): #llama al diccionario de uso de mesas 
         for capacidad, valores in uso_mesas.items(): #recorre el diccionario de uso de mesas
             total = valores["total"] #obtiene el total de mesas de la capacidad que estamos trabajando
             ocupadas = valores["ocupadas"] #obtiene el total de mesas ocupadas de esa capacidad
             if total > 0: #si el numero total de mesas de la capacidad que estamos trabajando es mayor a 0
-                tasa_ocupacion = (ocupadas / total) * 100 #calcula la tasa de ocupación
+                tasa_ocupacion = (ocupadas / total) #calcula la tasa de ocupación
             else:
                 tasa_ocupacion = 0 #si no hay mesas de esa capacidad, la tasa de ocupación es 0
             print(f"Capacidad {capacidad}: Tasa de ocupación: {tasa_ocupacion:.2f}%")
@@ -124,9 +127,10 @@ class Restaurante:
             raise ValueError("El producto no es válido. Debe ser uno de los siguientes: rapida, tradicional, saludable, gourmet")
         if precio <= 0:
             raise ValueError("El precio debe ser mayor a 0")
+        
         producto = producto.lower()
         if producto in self.consumo: #Si el producto ya existe en el diccionario, se suma el precio
-            self.consumo[producto] += precio #Suma el precio al producto existente
+            self.consumo[producto] += precio #Suma el precio al producto existente 
         else: #Si el producto no existe en el diccionario, se agrega
             self.consumo[producto] = precio #Agrega el producto y el precio al diccionario
         
@@ -142,6 +146,9 @@ class Restaurante:
         return self.calcular_consumo_subtotal() * porcentaje_propina #Calcula la propina multiplicando el subtotal por el porcentaje de propina
     
     def calcular_total(self, incluir_propina:str): #Incluir propina o no
+        if incluir_propina.lower() not in ("si", "no"):
+            raise ValueError("La opción debe ser 'si' o 'no'")  
+        
         subtotal = self.calcular_consumo_subtotal()
         propina = self.calcular_propina()
         
@@ -167,6 +174,7 @@ class Restaurante:
             datetime.strptime(fecha, "%Y-%m-%d")  # Verifica que la fecha esté en el formato correcto
         except ValueError:
             raise ValueError("La fecha debe estar en el formato YYYY-MM-DD")
+        
         total_tiempo = 0
         conteo = 0
         for fila in self.mesas.matriz: 
@@ -182,7 +190,7 @@ class Restaurante:
             return 0
         return total_tiempo / conteo  # Promedio en minutos
     
-    def porcentaje_productos_consumidos_por_categoría_sede_específica(self):
+    def porcentaje_productos_consumidos_por_categoría_sede_especifica(self):
         total = sum(self.consumo.values())
         if total == 0:
             print("No se ingresaron los productos correctamente")
