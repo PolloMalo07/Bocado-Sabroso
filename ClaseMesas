@@ -1,4 +1,4 @@
-from math import sqrt
+rom math import sqrt
 import numpy as np
 
 class MatrizMesas:
@@ -51,7 +51,7 @@ class MatrizMesas:
         matriz = np.empty((self.filas, self.columnas), dtype=object)  # matriz numpy de objetos
         for i in range(self.filas):
             for j in range(self.columnas):
-                letra = base[(j - i) % len(base)]  # patrón para alternar letras 
+                letra = base[(j - i) % len(base)]  # patrón para alternar letras   
                 identificador = f"{self.letras_filas[i]}{j+1}" # identificador de la mesa
 
                 # Asigna un diccionario a cada celda de la matriz
@@ -62,4 +62,5 @@ class MatrizMesas:
                     "letra": letra
                 }
         return matriz
+
     
